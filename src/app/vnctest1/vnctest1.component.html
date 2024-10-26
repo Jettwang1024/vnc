@@ -1,0 +1,60 @@
+<div class="container">
+  <div class="page-header">
+    <h1>Connections</h1>
+  </div>
+
+  <div class="row" *ngFor="let connection of connections; let i = index">
+    <div class="col-sm-4 col-md-6">
+      <div class="thumbnail">
+        <button type="button" class="close" (click)="removeConnection(i)">
+          <span aria-hidden="true">&times;</span>
+          <span class="sr-only">Close</span>
+        </button>
+        <!-- VNC Screen -->
+        <div id="vnc-screen" style="width: 1024px; height: 768px; border: 1px solid #000;"></div>
+
+        <div class="caption">
+          <form>
+            <div class="form-group">
+              <label for="host">Host</label>
+              <input type="text" id="host" class="form-control" [(ngModel)]="host" name="host">
+            </div>
+
+            <div class="form-group">
+              <label for="path">Path</label>
+              <input type="text" id="path" class="form-control" [(ngModel)]="path" name="path">
+            </div>
+
+            <div class="form-group">
+              <label for="port">Port</label>
+              <input type="text" id="port" class="form-control" [(ngModel)]="port" name="port">
+            </div>
+
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="text" id="password" class="form-control" [(ngModel)]="password" name="password">
+            </div>
+
+            <div class="form-group">
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" [(ngModel)]="viewOnly" name="viewOnly"> View only
+                </label>
+              </div>
+
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" [(ngModel)]="trueColor" name="trueColor"> True color
+                </label>
+              </div>
+            </div>
+
+            <button type="button" class="btn btn-primary" (click)="startClient()">Connect</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn btn-success" (click)="addConnection()">Add connection</button>
+</div>

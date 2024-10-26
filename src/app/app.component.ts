@@ -1,48 +1,99 @@
-import { Component } from "@angular/core";
+import { Component, OnDestroy } from "@angular/core";
+import { RouterModule } from "@angular/router";
 import RFB from '@novnc/novnc/lib/rfb';
+
+// 定義 SecurityFailureEvent 接口
+interface SecurityFailureEvent {
+  detail: {
+    status: number;  // 狀態碼
+    reason: string;  // 錯誤原因
+  }
+}
 
 @Component({
   selector: "app-root",
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"],
-  standalone: true
+  standalone: true,
+  imports: [RouterModule]  // 引入路由模組
 })
-export class AppComponent {
+export class AppComponent implements OnDestroy {
   title = "vnc-client";
-  public rfb: any;  // 改為 'any' 類型以避免類型錯誤
+  public rfb: InstanceType<typeof RFB> | null = null;  // 使用 'InstanceType<typeof RFB>' 類型
+  private monitorInterval: any;
 
   startClient() {
-    console.log("Starting !!!");
-
-    // 設定 VNC 伺服器參數
     const host = "localhost";
     const port = "5901";
-    const password = "kangs"; // VNC 伺服器密碼
-
-    // 建立 WebSocket URL
+    const password = "kangs";
     let url = window.location.protocol === "https:" ? "wss" : "ws";
-    url += "://" + host;
-    if (port) {
-      url += ":" + port;
-    }
+    url += "://" + host + (port ? ":" + port : "");
 
-    console.log("WebSocket URL: ", url);
-
-    // 獲取 canvas 元素作為目標顯示區域
     const target = document.getElementById("screen") as HTMLCanvasElement;
+
     if (!target) {
-      console.error("找不到 screen 元素，請檢查 HTML 標籤是否正確");
+      console.error("Cannot find 'screen' element.");
       return;
     }
 
-    // 建立 RFB 連接
     try {
-      this.rfb = new RFB(target, url, {
-        credentials: { password: password },
+      // 初始化 RFB 物件
+      this.rfb = new RFB(target, url, { credentials: { password } });
+
+      // 設置事件監聽器
+      this.rfb.addEventListener('connect', () => {
+        console.log('Connected to VNC server.');
       });
-      console.log("VNC 連接已建立");
+
+      this.rfb.addEventListener('disconnect', () => {
+        console.log('Disconnected from VNC server.');
+      });
+
+      this.rfb.addEventListener('securityfailure', (e: SecurityFailureEvent) => {
+        console.error('Security failure:', e.detail);
+      });
+
+      console.log("VNC connection attempt started.");
     } catch (error) {
-      console.error("VNC 連接失敗:", error);
+      console.error("Failed to initialize VNC connection:", error);
+      this.rfb = null; // 確保 rfb 在失敗時被設為 null
     }
+  }
+
+  monitorConnection() {
+    if (!this.rfb) {
+      console.error("No VNC connection established. Start the client first.");
+      return;
+    }
+
+    this.monitorInterval = setInterval(() => {
+      if (this.rfb) {
+        // 檢查連接狀態
+        console.log("Connection status:", this.rfb._rfb_connection_state || "Not initialized");
+      } else {
+        console.log("RFB object is not initialized.");
+      }
+    }, 1000); // 每秒檢查一次
+  }
+
+  stopMonitoring() {
+    if (this.monitorInterval) {
+      clearInterval(this.monitorInterval);
+      console.log("Stopped monitoring.");
+    }
+  }
+
+  disconnect() {
+    if (this.rfb) {
+      this.rfb.disconnect();
+      console.log("Disconnected from VNC server.");
+    } else {
+      console.error("No active VNC connection to disconnect.");
+    }
+    this.stopMonitoring();
+  }
+
+  ngOnDestroy() {
+    this.disconnect(); // 組件銷毀時斷開連接並停止監控
   }
 }
