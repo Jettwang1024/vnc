@@ -1,15 +1,4 @@
-<div>
-  <canvas id="screen" width="800" height="600"></canvas>
-  <button (click)="startClient()">Start VNC Client</button>
-  <button (click)="monitorConnection()">Monitor Connection</button>
-  <button (click)="stopMonitoring()">Stop Monitoring</button>
-  <button (click)="disconnect()">Disconnect</button>
+<app-sidebar></app-sidebar>
+<div class="main-content">
+  <router-outlet></router-outlet>
 </div>
-<router-outlet></router-outlet>
-
-<nav>
-  <ul>
-    <li><a routerLink="/vnctest">Go to Vnctest</a></li>
-    <li><a routerLink="/vnctest1">Go to Vnctest1</a></li>
-  </ul>
-</nav>

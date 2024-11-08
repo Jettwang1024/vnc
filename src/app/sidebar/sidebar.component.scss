@@ -1,0 +1,39 @@
+.sidebar {
+    width: 200px; /* 側邊欄寬度 */
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    background-color: #333;
+    color: #fff;
+    padding-top: 20px;
+    overflow: hidden;
+    transition: width 0.3s;
+  
+    &.expanded {
+      width: 200px; /* 展開時的寬度 */
+    }
+  }
+  
+  .sidebar ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .sidebar li {
+    padding: 10px;
+  }
+  
+  .sidebar a {
+    color: #fff;
+    text-decoration: none;
+  }
+  
+  .sidebar a:hover {
+    text-decoration: underline;
+  }
+  
+  .active {
+    font-weight: bold; /* 當前頁面鏈接高亮 */
+  }
+  

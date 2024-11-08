@@ -1,6 +1,6 @@
 <div class="container">
   <div class="page-header">
-    <h1>Connections</h1>
+    <h1>VNC 連線</h1>
   </div>
 
   <div class="row" *ngFor="let connection of connections; let i = index">
@@ -10,51 +10,47 @@
           <span aria-hidden="true">&times;</span>
           <span class="sr-only">Close</span>
         </button>
-        <!-- VNC Screen -->
-        <div id="vnc-screen" style="width: 1024px; height: 768px; border: 1px solid #000;"></div>
+
+        <div id="vnc-screen-{{i}}" style="width: 1024px; height: 768px; border: 1px solid #000;"></div>
 
         <div class="caption">
           <form>
             <div class="form-group">
               <label for="host">Host</label>
-              <input type="text" id="host" class="form-control" [(ngModel)]="host" name="host">
-            </div>
-
-            <div class="form-group">
-              <label for="path">Path</label>
-              <input type="text" id="path" class="form-control" [(ngModel)]="path" name="path">
+              <input type="text" id="host-{{i}}" class="form-control" [(ngModel)]="connection.host" name="host-{{i}}">
             </div>
 
             <div class="form-group">
               <label for="port">Port</label>
-              <input type="text" id="port" class="form-control" [(ngModel)]="port" name="port">
+              <input type="text" id="port-{{i}}" class="form-control" [(ngModel)]="connection.port" name="port-{{i}}">
             </div>
 
             <div class="form-group">
               <label for="password">Password</label>
-              <input type="text" id="password" class="form-control" [(ngModel)]="password" name="password">
+              <input type="text" id="password-{{i}}" class="form-control" [(ngModel)]="connection.password" name="password-{{i}}">
             </div>
 
             <div class="form-group">
               <div class="checkbox">
                 <label>
-                  <input type="checkbox" [(ngModel)]="viewOnly" name="viewOnly"> View only
+                  <input type="checkbox" [(ngModel)]="connection.viewOnly" name="viewOnly-{{i}}"> 僅查看模式
                 </label>
               </div>
 
               <div class="checkbox">
                 <label>
-                  <input type="checkbox" [(ngModel)]="trueColor" name="trueColor"> True color
+                  <input type="checkbox" [(ngModel)]="connection.trueColor" name="trueColor-{{i}}"> 真彩模式
                 </label>
               </div>
             </div>
 
-            <button type="button" class="btn btn-primary" (click)="startClient()">Connect</button>
+            <button type="button" class="btn btn-primary" (click)="startClient(connection, i)">連線</button>
+            <button type="button" class="btn btn-danger" (click)="disconnectClient(i)">中斷連線</button>
           </form>
         </div>
       </div>
     </div>
   </div>
 
-  <button class="btn btn-success" (click)="addConnection()">Add connection</button>
+  <button class="btn btn-success" (click)="addConnection()">新增連線</button>
 </div>

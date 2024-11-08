@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms'; 
+import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import RFB from '@novnc/novnc/lib/rfb';
 
@@ -8,61 +8,83 @@ import RFB from '@novnc/novnc/lib/rfb';
   standalone: true,
   imports: [FormsModule, CommonModule],
   templateUrl: './vnctest1.component.html',
-  styleUrls: ['./vnctest1.component.scss']
+  styleUrls: ['./vnctest1.component.scss'],
 })
 export class Vnctest1Component {
   public connections: any[] = [];
-  public viewOnly = false;  // 是否僅限查看模式
-  public trueColor = true;  // 是否使用真彩色
-  public host = 'localhost';
-  public port = '5901';
-  public password = 'kangs';
-  public path = 'websockify';
   public connected = false;
-  public states: any[] = [];
-  private rfb: InstanceType<typeof RFB> | null = null; // 使用 'InstanceType<typeof RFB>'
+  private rfbs: { [key: number]: InstanceType<typeof RFB> | null } = {};
 
   addConnection() {
-    this.connections.push({});
+    this.connections.push({
+      host: '10.60.8.65', // 用戶可以在前端表單中修改
+      port: '5900',        // 用戶可以在前端表單中修改
+      password: 'kangs',
+      path: 'websockify',
+      viewOnly: false,
+      trueColor: true,
+    });
+  }
+
+  disconnectClient(index: number) {
+    if (this.rfbs[index]) {
+      this.rfbs[index].disconnect();
+      this.rfbs[index] = null;
+      this.connected = false;
+      console.log(`Disconnected from VNC server (connection ${index}).`);
+    } else {
+      console.log('No active connection to disconnect.');
+    }
   }
 
   removeConnection(index: number) {
+    this.disconnectClient(index);
     this.connections.splice(index, 1);
   }
 
-  startClient() {
-    // 使用當前綁定的變量值來建立 VNC 連接
-    const url = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${this.host}:${this.port}/${this.path}`;
-    const screenElement = document.getElementById('vnc-screen') as HTMLElement; // 使用 'vnc-screen' ID
+  startClient(connection: any, index: number) {
+    console.log(`Connecting to host: ${connection.host}, port: ${connection.port}, path: ${connection.path}`);
+    
+    fetch(`http://localhost:3000/connect?host=${connection.host}&port=${connection.port}`, {
+      method: 'POST'
+    })
+    .then(response => response.text())
+    .then(data => {
+      console.log(data);
 
-    // 檢查是否存在 screen 元素
-    if (screenElement) {
-      screenElement.innerHTML = ''; // 清空舊畫面，避免重複渲染
+      const url = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://localhost:6080/${connection.path}`;
 
-      // 創建 RFB 連接
-      this.rfb = new RFB(screenElement, url, {
-        credentials: { password: this.password },
-        shared: true,
-        view_only: this.viewOnly,  // 設置為僅限查看模式
-        true_color: this.trueColor // 設置為真彩色
-      });
-
-      // 事件監聽
-      this.rfb.addEventListener('connect', () => {
-        console.log('Connected to VNC server.');
-        this.connected = true;
-      });
-
-      this.rfb.addEventListener('disconnect', () => {
-        console.log('Disconnected from VNC server.');
-        this.connected = false;
-      });
-
-      this.rfb.addEventListener('securityfailure', (e: any) => {
-        console.error('Security failure:', e.detail.reason);
-      });
-    } else {
-      console.error('Cannot find "vnc-screen" element.');
-    }
+      const screenElement = document.getElementById(`vnc-screen-${index}`) as HTMLElement;
+    
+      if (screenElement) {
+        screenElement.innerHTML = ''; // 清空先前的 VNC 畫面
+    
+        this.rfbs[index] = new RFB(screenElement, url, {
+          credentials: { password: connection.password },
+          shared: true,
+          view_only: connection.viewOnly,
+          true_color: connection.trueColor,
+        });
+    
+        this.rfbs[index].addEventListener('connect', () => {
+          console.log(`Connected to VNC server (connection ${index}).`);
+          this.connected = true;
+        });
+    
+        this.rfbs[index].addEventListener('disconnect', () => {
+          console.log(`Disconnected from VNC server (connection ${index}).`);
+          this.connected = false;
+        });
+    
+        this.rfbs[index].addEventListener('securityfailure', (e: any) => {
+          console.error(`Security failure on connection ${index}:`, e.detail.reason);
+        });
+      } else {
+        console.error(`Cannot find "vnc-screen-${index}" element.`);
+      }
+    })
+    .catch(error => {
+      console.error('Error connecting to proxy server:', error);
+    });
   }
 }

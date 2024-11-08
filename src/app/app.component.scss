@@ -1,7 +1,4 @@
-#screen {
-    border: 2px solid #000; // 黑色 2px 寬的邊框
-    width: 800px;          // 設置寬度（可根據需要調整）
-    height: 600px;         // 設置高度（可根據需要調整）
-    box-sizing: border-box; // 確保邊框不會影響元素的大小
-  }
-  
+.main-content {
+  margin-left: 200px; /* 側邊欄寬度對應 */
+  padding: 20px;
+}
