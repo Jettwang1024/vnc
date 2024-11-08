@@ -11,7 +11,17 @@
           <span class="sr-only">Close</span>
         </button>
 
-        <div id="vnc-screen-{{i}}" style="width: 1024px; height: 768px; border: 1px solid #000;"></div>
+        <!-- VNC Screen -->
+        <div 
+        id="vnc-screen-{{i}}"
+        [ngStyle]="{
+          'width.px': (screenDimensions[i]?.width ?? 1920) * scaleFactor,
+          'height.px': (screenDimensions[i]?.height ?? 1080) * scaleFactor,
+          'transform': 'scale(' + scaleFactor + ')',
+          'transform-origin': 'top left',
+          'overflow': 'hidden' 
+        }">
+      </div>
 
         <div class="caption">
           <form>
